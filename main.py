@@ -1,48 +1,48 @@
-import jogo
-import algoritmoGenetico as ag
+import tetris_ai.tetris_ai as t
+import tetris_ai.ga as ga
 import matplotlib.pyplot as plt
 
 def main():
-    qtdPop = int(input("Quantidade Gerações: "))
-    qtInd = int(input("Quantidade de individuos: "))
-    mutacao = float(input("Mutação: "))
-    chanceCO = float(input("CrossOver: "))
-    melhores = int(input("Manter os melhores: "))
+    # Config
+    NUM_GEN      = 5
+    NUM_POP      = 15
+    TX_MUTACAO   = 0.3
+    TX_CROSSOVER = 0.5
+    TX_ELITISMO  = 5
 
-    geracao = ag.Geracao(qtInd)
+    genetic_alg      = ga.GA(NUM_POP)
 
-    best_individuos = []
-    score_medias_geracoes = []
+    best_pop_gen = []
+    avg_pop_gen  = []
 
-
-    vel_jogo = 500
-    for j in range(qtdPop):
+    game_speed = 500
+    for j in range(NUM_GEN):
         print (' \n')
         print (' - - - - Geração atual: {} - - - - ' .format(j+1))
         print (' \n')
 
-        for i in range(qtInd):
-            gameState = jogo.jogar(geracao.individuos[i], vel_jogo, scoreMax = 200000, jogoRapido = True)
-            geracao.individuos[i].fitness(gameState)
-            print("Individuo: "+ (i + 1).__str__() + " score:" + geracao.individuos[i].score.__str__())
-        geracao.selecao(melhores, best_individuos, score_medias_geracoes)
+        for i in range(NUM_POP):
+            game_state = t.run_game(genetic_alg.chromosomes[i], game_speed, max_score = 200000, show_game = False)
+            genetic_alg.chromosomes[i].calc_fitness(game_state)
+            print("Individuo: "+ (i + 1).__str__() + " score:" + genetic_alg.chromosomes[i].score.__str__())
 
-        geracao.reproduzir(qtInd, chanceCO, mutacao)
+        genetic_alg.selection(TX_ELITISMO, best_pop_gen, avg_pop_gen)
+        genetic_alg.operators(NUM_POP, TX_CROSSOVER, TX_MUTACAO)
 
     print("Melhores Individuos:")
-    print(best_individuos)
+    print(best_pop_gen)
     plt.subplot(211)
 
     plt.title('Fitness dos melhores indivíduos por geração')
-    plt.plot(best_individuos)
+    plt.plot(best_pop_gen)
     plt.ylabel("Fitness dos melhores indivíduos")
     plt.xlabel("Gerações")
 
     plt.subplot(212)
     print("Medias do fitness por gerações:")
-    print(score_medias_geracoes)
+    print(avg_pop_gen)
     plt.title('Médias do fitness dos indivíduos por geração')
-    plt.plot(score_medias_geracoes)
+    plt.plot(avg_pop_gen)
     plt.ylabel("Media do Fitness por Geração")
     plt.xlabel("Gerações")
     plt.subplots_adjust(top=0.89, bottom=0.11, left=0.12, right=0.95, hspace=0.85,
@@ -50,7 +50,7 @@ def main():
 
     plt.show()
 
-    return(geracao)
+    return(genetic_alg)
 
 gen = main()
 
