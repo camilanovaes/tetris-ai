@@ -34,7 +34,7 @@ def main():
         # insert new children in pop
         genetic_alg.chromosomes[-(len(new_chldren)):] = new_chldren
     
-    """
+    
     print("Melhores Individuos:")
     print(best_pop_score)
     plt.subplot(211)
@@ -55,7 +55,7 @@ def main():
                         wspace=0.35)
 
     plt.show()
-    """
+    
 
     return best_chromos
 
