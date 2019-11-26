@@ -117,7 +117,7 @@ if __name__ == '__main__':
     pesos0 = numPesos*[0]
     for k2 in range (0,numPesos):
         pesos0[k2] = 2*random.random()-1
-    pesos0= [-0.97, 5.47, -13.74, -0.73,  7.99, -0.86, -0.72]
+    pesos0 = [-0.97, 5.47, -13.74, -0.73,  7.99, -0.86, -0.72]
     indiv = ga.Chromosome(pesos0)
 
     run_game(indiv, 300, max_score=200000)

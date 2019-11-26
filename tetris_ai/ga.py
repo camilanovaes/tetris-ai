@@ -26,7 +26,7 @@ class Chromosome():
 
     def calc_fitness(self, game_state):
         #gameState = [numero de pecas, linhas destruidas(combos de 1,2,3,4), score normal de tetris, ganhou]
-        #k1*t - abs(deltaY(morreu)[player-bolinha))
+        # k1*t - abs(deltaY(morreu)[player-bolinha))
         self.score = game_state[0]
 
     def calc_best_move(self, board, piece, show_game = False):
@@ -100,6 +100,7 @@ class GA:
         return ''
 
     def selection(self, num_selec, best_chroms, avg_score_gen):
+
         """
         Realiza a selecao dos numSelec melhor individuos baseados no score de uma simulacao do jogo.
         Ordena os individuos baseados nos scores e seleciona os numSelec melhores.
@@ -149,7 +150,7 @@ class GA:
             weights = self.chromosomes[k+1].weights[:]
             chrom_2 = Chromosome(weights)
 
-            self.crossover(chrom_1,chrom_2,tx_crossover)
+            self.arithmetic_crossover(chrom_1,chrom_2,tx_crossover)
             self.mutation(chrom_1,tx_mutation)
             self.mutation(chrom_2,tx_mutation)
 
@@ -166,11 +167,39 @@ class GA:
     ## Aplica o crossing over 'numCO' vezes na duplicacao de cada individuo gerada por reproduzir.
     ## Seleciona randomicamente uma das casas do vetor de peso do individuo[0] (que e' o individuo
     ## com maior score
-    def crossover(self, individuo1, individuo2, chanceCO):
+    def uniform_crossover(self, individuo1, individuo2, chanceCO):
+        
+        """
+            Calculate uniform crossover with exchange between cromo genes 
+            param1: individuo1 - frist individual
+            param2: individuo2 - second individual
+            param3: cross_rate - crossover rate, default = 0.4
+
+        """
         for k in range (len(individuo1.weights)):
             r = random.random()
             if r < chanceCO:
                 individuo1.weights[k], individuo2.weights[k] = individuo2.weights[k], individuo1.weights[k]
+
+    # arithmetic crossover with cross_point
+    def arithmetic_crossover(self, cromo_1, cromo_2, cross_rate = 0.4):
+        """
+            Calculate arithmetic crossover with cross point
+            param1: cromo_1 - frist individual
+            param2: cromo_2 - second individual
+            param3: cross_rate - crossover rate, default = 0.4
+
+        """
+        r = random.random()
+        if r < cross_rate:
+            cross_point = random.randint(1, len(cromo_1.weights-1))
+            
+            # means for each gene bounded by cross point
+            for i in range(cross_point):
+                cromo_1.weights[i] = (cromo_1.weights[i] + cromo_2.weights[i])/2
+            
+            for j in range(cross_point, len(cromo_1.weights)):
+                cromo_2.weights[j] = (cromo_2.weights[j] + cromo_1.weights[j])/2
 
 
 
