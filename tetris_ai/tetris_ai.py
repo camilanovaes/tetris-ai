@@ -110,15 +110,3 @@ def draw_game_on_screen(board, score, level, next_piece, falling_piece):
 
     pygame.display.update()
     t.FPSCLOCK.tick(t.FPS)
-
-if __name__ == '__main__':
-    #TODO: Move the following code to the main script
-    numPesos = 7
-    pesos0 = numPesos*[0]
-    for k2 in range (0,numPesos):
-        pesos0[k2] = 2*random.random()-1
-    pesos0 = [-0.97, 5.47, -13.74, -0.73,  7.99, -0.86, -0.72]
-    indiv = ga.Chromosome(pesos0)
-
-    run_game(indiv, 300, max_score=200000)
-

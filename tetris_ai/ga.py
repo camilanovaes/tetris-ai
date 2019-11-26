@@ -139,19 +139,71 @@ class GA:
 
         return self
 
-    def operators(self, m, tx_crossover = 0.5, tx_mutation = 0.15):
+    # roulette selection
+    def roulette(self, num_selection, best_pop_score, avg_score_gen, best_chromos):
         """
+        Selection by roulette wheel
+
+        """
+        # pop sorted
+        self.chromosomes = sorted(self.chromosomes, key=lambda x: x.score, reverse=True)
+        total_score     = 0
+        num_pop         = len(self.chromosomes)
+        
+        # numpy fitness array
+        fitness = np.zeros(num_pop, dtype="uint32")
+
+        for i in range(num_pop):
+            total_score += self.chromosomes[i].score
+            fitness[i] = self.chromosomes[i].score
+        
+        # mean pop
+        print("\n Average score: ", total_score / num_pop)
+        avg_score_gen.append(total_score / num_pop);
+
+        best_score_gen = self.chromosomes[0].score
+        best_pop_score.append(best_score_gen)
+
+        # chromosomes to play the game alone
+        best_chromos.append(self.chromosomes[0])
+        
+        
+        ### roulette selection ###
+        
+        # normalized fitness
+        prob_fitness = fitness/fitness.sum()
+
+        # roulette probability
+        roulette_prob = np.cumsum(prob_fitness)
+
+        pop_selected = []
+
+        while len(pop_selected) < num_selection:
+            pick = random.random()
+            for index, individual in enumerate(self.chromosomes): 
+                
+                if pick < roulette_prob[index]:
+                    pop_selected.append(individual)
+                    break
+
+        return pop_selected
+
+
+    """
+    def operators(self, n_pop, tx_crossover = 0.5, tx_mutation = 0.15):
+        '''
         A partir dos individuos selecionados em 'selecao' com melhor score, duplica os individuos
         comecando pelo de melhor score ate o numero de individuos chegar ao valor da variavel 'm'.
         Realiza o Crossing Over e a Mutacao nos individuos novos gerados.
 
         TODO: Arrumar essas funções de crossover e mutação
 
-        """
-        num_pop = len(self.chromosomes)
+        '''
+        # selected pop
+        num_sel_pop = len(self.chromosomes)
 
         k = 0
-        while len(self.chromosomes) < m :
+        while len(self.chromosomes) < n_pop :
             weights = self.chromosomes[k].weights[:]
             chrom_1 = Chromosome(weights)
             weights = self.chromosomes[k+1].weights[:]
@@ -163,12 +215,13 @@ class GA:
 
             self.chromosomes.append(chrom_1)
 
-            if len(self.chromosomes) < m:
+            if len(self.chromosomes) < n_pop:
                 self.chromosomes.append(chrom_2)
 
             k += 2
 
         return self
+        """
 
     ### --------------------- genCrossOver:
     ## Aplica o crossing over 'numCO' vezes na duplicacao de cada individuo gerada por reproduzir.
@@ -189,24 +242,32 @@ class GA:
                 individuo1.weights[k], individuo2.weights[k] = individuo2.weights[k], individuo1.weights[k]
 
     # arithmetic crossover with cross_point
-    def arithmetic_crossover(self, cromo_1, cromo_2, cross_rate = 0.4):
+    def arithmetic_crossover(self, selected_pop , cross_rate = 0.4):
         """
             Calculate arithmetic crossover with cross point
-            param1: cromo_1 - frist individual
-            param2: cromo_2 - second individual
-            param3: cross_rate - crossover rate, default = 0.4
+            param1: selected_pop - pop choiced in selection role
+            param2: cross_rate - crossover rate, default = 0.4
 
         """
-        r = random.random()
-        if r < cross_rate:
-            cross_point = random.randint(1, len(cromo_1.weights-1))
-            
-            # means for each gene bounded by cross point
-            for i in range(cross_point):
-                cromo_1.weights[i] = (cromo_1.weights[i] + cromo_2.weights[i])/2
-            
-            for j in range(cross_point, len(cromo_1.weights)):
-                cromo_2.weights[j] = (cromo_2.weights[j] + cromo_1.weights[j])/2
+        
+        # make arithmetic crossover for each individual selected
+        n_pop = len(selected_pop)
+
+        for ichromo in range(0, n_pop, 2): 
+            r = random.random()
+            if r < cross_rate and ichromo+1 < n_pop:
+                cross_point = random.randint(1, len(selected_pop[0].weights)-1)
+                
+                # means for each gene bounded by cross point
+                for i in range(cross_point):
+                    selected_pop[ichromo].weights[i] = (selected_pop[ichromo].weights[i] + selected_pop[ichromo+1].weights[i])/2
+                
+                for j in range(cross_point, len(selected_pop[0].weights)):
+                    selected_pop[ichromo].weights[j] = (selected_pop[ichromo+1].weights[j] + selected_pop[ichromo].weights[j])/2
+        
+        # retunn children in pop
+        return selected_pop
+
 
 
 
@@ -222,7 +283,11 @@ class GA:
                 mut = 10 + individuo1.weights[k1]/10.0                   #mut eh um parametro relaxionado com a dispersao possivel de mutacao
                 individuo1.weights[k1] += mut*(2*random.randrange(1000)/1000.0 - 1)       #randomicamente adiciona-se algo entre +- mut no gene
 
-    def uniform_mutation(self, child, mutation_rate):
-        for point in range(len(child.weights)):
-            if np.random.rand() < mutation_rate:
-                child.weights[point] = random.uniform(-1.0, 1.0)
+    def uniform_mutation(self, children, mutation_rate):
+        
+        for child in children:
+
+            for point in range(len(children[0].weights)):
+                if np.random.rand() < mutation_rate:
+                    child.weights[point] = random.uniform(-1.0, 1.0)
+        return children

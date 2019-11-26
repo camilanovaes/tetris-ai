@@ -6,16 +6,18 @@ def main():
     # Config
     NUM_GEN      = 5
     NUM_POP      = 15
-    TX_MUTACAO   = 0.3
-    TX_CROSSOVER = 0.5
-    TX_ELITISMO  = 5
+    MUTATION_RATE   = 0.3
+    CROSSOVER_RATE = 0.5
+    N_SELECTION  = 5
 
     genetic_alg      = ga.GA(NUM_POP)
 
-    best_pop_cromos = []
+    
+    best_chromos = []
+    best_pop_score = []
     avg_pop_gen  = []
 
-    game_speed = 500
+    game_speed = 600
     for j in range(NUM_GEN):
         print (' \n')
         print (' - - - - Geração atual: {} - - - - ' .format(j+1))
@@ -26,15 +28,19 @@ def main():
             genetic_alg.chromosomes[i].calc_fitness(game_state)
             print("Individuo: "+ (i + 1).__str__() + " score:" + genetic_alg.chromosomes[i].score.__str__())
 
-        genetic_alg.selection(TX_ELITISMO, best_pop_cromos, avg_pop_gen)
-        genetic_alg.operators(NUM_POP, TX_CROSSOVER, TX_MUTACAO)
-
+        selected_pop = genetic_alg.roulette(N_SELECTION, best_pop_score, avg_pop_gen, best_chromos)
+        children = genetic_alg.arithmetic_crossover(selected_pop, CROSSOVER_RATE)
+        new_chldren = genetic_alg.uniform_mutation(children, MUTATION_RATE)
+        # insert new children in pop
+        genetic_alg.chromosomes[-(len(new_chldren)):] = new_chldren
+    
+    """
     print("Melhores Individuos:")
-    print(best_pop_cromos)
+    print(best_pop_score)
     plt.subplot(211)
 
     plt.title('Fitness dos melhores indivíduos por geração')
-    plt.plot(best_pop_cromos)
+    plt.plot(best_pop_score)
     plt.ylabel("Fitness dos melhores indivíduos")
     plt.xlabel("Gerações")
 
@@ -49,12 +55,23 @@ def main():
                         wspace=0.35)
 
     plt.show()
+    """
+
+    return best_chromos
 
 if __name__ == "__main__":
     # test looking for better chomossome
     # by genetic algorithm
-    main()
-    
+    best_chromos = main()
+
+    """
+    # play game to the best chromos
+    for chromo in best_chromos:
+        print("bests chromo\n\n")
+        # run game with choiced cromo
+        t.run_game(chromo, 200, max_score=200000)    
+    """
+
     """
     # test for one especific cromossomo
     # generate weight randomly
@@ -73,5 +90,3 @@ if __name__ == "__main__":
     t.run_game(indiv, 300, max_score=200000)
     
     """
-
-
