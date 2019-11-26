@@ -12,7 +12,7 @@ def main():
 
     genetic_alg      = ga.GA(NUM_POP)
 
-    best_pop_gen = []
+    best_pop_cromos = []
     avg_pop_gen  = []
 
     game_speed = 500
@@ -26,15 +26,15 @@ def main():
             genetic_alg.chromosomes[i].calc_fitness(game_state)
             print("Individuo: "+ (i + 1).__str__() + " score:" + genetic_alg.chromosomes[i].score.__str__())
 
-        genetic_alg.selection(TX_ELITISMO, best_pop_gen, avg_pop_gen)
+        genetic_alg.selection(TX_ELITISMO, best_pop_cromos, avg_pop_gen)
         genetic_alg.operators(NUM_POP, TX_CROSSOVER, TX_MUTACAO)
 
     print("Melhores Individuos:")
-    print(best_pop_gen)
+    print(best_pop_cromos)
     plt.subplot(211)
 
     plt.title('Fitness dos melhores indivíduos por geração')
-    plt.plot(best_pop_gen)
+    plt.plot(best_pop_cromos)
     plt.ylabel("Fitness dos melhores indivíduos")
     plt.xlabel("Gerações")
 
@@ -50,7 +50,28 @@ def main():
 
     plt.show()
 
-    return(genetic_alg)
+if __name__ == "__main__":
+    # test looking for better chomossome
+    # by genetic algorithm
+    main()
+    
+    """
+    # test for one especific cromossomo
+    # generate weight randomly
+    numPesos = 7
+    pesos0 = numPesos*[0]
+    for k2 in range (0,numPesos):
+        pesos0[k2] = 2*random.random()-1
+    
+    # choice especific weight 
+    pesos0 = [-0.97, 5.47, -13.74, -0.73,  7.99, -0.86, -0.72]
 
-gen = main()
+    genetic_alg = ga.GA(10)
+    
+    # run game with choiced cromo
+    indiv = ga.Chromosome(pesos0)
+    t.run_game(indiv, 300, max_score=200000)
+    
+    """
+
 

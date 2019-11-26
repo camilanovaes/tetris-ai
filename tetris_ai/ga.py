@@ -27,7 +27,7 @@ class Chromosome():
     def calc_fitness(self, game_state):
         #gameState = [numero de pecas, linhas destruidas(combos de 1,2,3,4), score normal de tetris, ganhou]
         # k1*t - abs(deltaY(morreu)[player-bolinha))
-        self.score = game_state[0]
+        self.score = game_state[2]
 
     def calc_best_move(self, board, piece, show_game = False):
         """
@@ -121,11 +121,18 @@ class GA:
         avg_score_gen.append(total_score / num_pop);
 
         best_score_gen = 0
+        """
         for i in range(num_pop):
             if(self.chromosomes[i].score > best_score_gen):
                 best_score_gen = self.chromosomes[i].score
                 best_chroms.append(best_score_gen)
-
+        """
+        # how it is sorted
+        # just get the best score
+        best_score_gen = self.chromosomes[0].score
+        best_chroms.append(best_score_gen)
+        
+        
         print("Best score: ", best_score_gen, "\n")
 
         self.chromosomes = self.chromosomes[:num_selec]
@@ -151,8 +158,8 @@ class GA:
             chrom_2 = Chromosome(weights)
 
             self.arithmetic_crossover(chrom_1,chrom_2,tx_crossover)
-            self.mutation(chrom_1,tx_mutation)
-            self.mutation(chrom_2,tx_mutation)
+            self.uniform_mutation(chrom_1,tx_mutation)
+            self.uniform_mutation(chrom_2,tx_mutation)
 
             self.chromosomes.append(chrom_1)
 
@@ -215,3 +222,7 @@ class GA:
                 mut = 10 + individuo1.weights[k1]/10.0                   #mut eh um parametro relaxionado com a dispersao possivel de mutacao
                 individuo1.weights[k1] += mut*(2*random.randrange(1000)/1000.0 - 1)       #randomicamente adiciona-se algo entre +- mut no gene
 
+    def uniform_mutation(self, child, mutation_rate):
+        for point in range(len(child.weights)):
+            if np.random.rand() < mutation_rate:
+                child.weights[point] = random.uniform(-1.0, 1.0)
