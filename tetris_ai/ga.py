@@ -1,19 +1,11 @@
 import pygame
 import random
 import numpy as np
+import copy
 import tetris_ai.tetris_base as t
 
 
 class Chromosome():
-    """
-    A classe Individuo incializa o individuo com score nulo e um vetor de pesos.
-    Ela tambem implementa a funcao fitness utilizada para avaliar o score de
-    cada individuo e calcula a direcao para a qual o jogador se move (para
-    esquerda ou direita e se deve rotacionar) a partir do resultado calculado
-    multiplicando-se o vetor de pesos daquele individuo por uma entrada.
-
-    """
-
     def __init__(self, weights):
         self.weights = weights
         self.score   = 0
@@ -25,15 +17,12 @@ class Chromosome():
         return s
 
     def calc_fitness(self, game_state):
-        #gameState = [numero de pecas, linhas destruidas(combos de 1,2,3,4), score normal de tetris, ganhou]
-        # k1*t - abs(deltaY(morreu)[player-bolinha))
+        """Calculate fitness"""
         self.score = game_state[2]
 
     def calc_best_move(self, board, piece, show_game = False):
-        """
-        Seleciona a direcao em que o jogador vai se mover a partir do valor computado pelo
-        produto entre o vetor entrada e o vetor pesos de cada individuo. Se esse valor
-        for maior que meio, o jogador sobe, caso contrario ele desce.
+        """Calculate best movement
+        Select the best move based on the chromosome weights.
 
         """
         best_X     = 0          # Melhor posição em X
@@ -47,9 +36,9 @@ class Chromosome():
             # Iterate through every possible rotation
             for x in range(-2,t.BOARDWIDTH-2):
                 #Iterate through every possible position
-
-                #retorna: [jogadaValida, alturaTotal, numLinhasCompletas, buracosFormados, tampasFormadas, ladosPecas, ladosChao, ladosParede]
-                movement_info = t.calc_move_info(board, piece, x, r, num_holes_bef, num_blocking_blocks_bef)
+                movement_info = t.calc_move_info(board, piece, x, r, \
+                                                 num_holes_bef, \
+                                                 num_blocking_blocks_bef)
 
                 # Check if it's a valid movement
                 if (movement_info[0]):
@@ -63,7 +52,7 @@ class Chromosome():
                         best_score = movement_score
                         best_X = x
                         best_R = r
-                        best_Y = piece['y'] #p ir mais rapido
+                        best_Y = piece['y']
 
         if (show_game):
             piece['y'] = best_Y
@@ -76,16 +65,8 @@ class Chromosome():
         return best_X, best_R
 
 
-
 class GA:
-    #TODO: Refazer toda essa parte de GA.
-
     def __init__ (self, num_pop, num_weights=7, lb=-1, ub=1):
-        """Realiza a inicializacao dos pesos a partir das grandezas contidas nas variaveis numInd e numPesos.
-        Cria um vetor de numPesos casas cujos valores iniciais sao randomicos distribuidos no intervalo
-        de [-1,1].
-
-        """
         self.chromosomes = []
 
         for _ in range(num_pop):
@@ -99,195 +80,108 @@ class GA:
             print(self.chromosomes[i])
         return ''
 
-    def selection(self, num_selec, best_chroms, avg_score_gen):
+    def selection(self, chromosomes, num_selection, type = "roulette"):
+        """Define the selection method to use
+
+        Args:
+            chromosomes: Chromosomes to select
+            type       : Selection type. (Defalt: roulette)
 
         """
-        Realiza a selecao dos numSelec melhor individuos baseados no score de uma simulacao do jogo.
-        Ordena os individuos baseados nos scores e seleciona os numSelec melhores.
 
-        TODO: Adicionar uma forma de seleção. Pode ser roleta ou torneio, pq
-        aqui basicamente temos apenas uma seleção totalmente elitista. Apenas os
-        melhores são selecionados para o cruzamento
+        if (type == "roulette"):
+            selected_chromos = self._roulette(chromosomes, num_selection)
+        else:
+            raise ValueError(f"Selection type {type} not defined")
 
-        """
-        self.chromosomes = sorted(self.chromosomes, key=lambda x: x.score, reverse=True)
-        total_score     = 0
-        num_pop         = len(self.chromosomes)
+        return selected_chromos
 
-        for i in range(num_pop):
-            total_score += self.chromosomes[i].score
+    def _roulette(self, chromosomes, num_selection):
+        """Selection method using roulette wheel"""
 
-        print("\n Average score: ", total_score / num_pop)
-        avg_score_gen.append(total_score / num_pop);
+        fitness = np.array([chrom.score for chrom in chromosomes])
 
-        best_score_gen = 0
-        """
-        for i in range(num_pop):
-            if(self.chromosomes[i].score > best_score_gen):
-                best_score_gen = self.chromosomes[i].score
-                best_chroms.append(best_score_gen)
-        """
-        # how it is sorted
-        # just get the best score
-        best_score_gen = self.chromosomes[0].score
-        best_chroms.append(best_score_gen)
-        
-        
-        print("Best score: ", best_score_gen, "\n")
+        # Normalized fitness
+        norm_fitness  = fitness/fitness.sum()
 
-        self.chromosomes = self.chromosomes[:num_selec]
+        # Roulette probability
+        roulette_prob = np.cumsum(norm_fitness)
 
-        return self
-
-    # roulette selection
-    def roulette(self, num_selection, best_pop_score, avg_score_gen, best_chromos):
-        """
-        Selection by roulette wheel
-
-        """
-        # pop sorted
-        self.chromosomes = sorted(self.chromosomes, key=lambda x: x.score, reverse=True)
-        total_score     = 0
-        num_pop         = len(self.chromosomes)
-        
-        # numpy fitness array
-        fitness = np.zeros(num_pop, dtype="uint32")
-
-        for i in range(num_pop):
-            total_score += self.chromosomes[i].score
-            fitness[i] = self.chromosomes[i].score
-        
-        # mean pop
-        print("\n Average score: ", total_score / num_pop)
-        avg_score_gen.append(total_score / num_pop);
-
-        best_score_gen = self.chromosomes[0].score
-        best_pop_score.append(best_score_gen)
-
-        # chromosomes to play the game alone
-        best_chromos.append(self.chromosomes[0])
-        
-        
-        ### roulette selection ###
-        
-        # normalized fitness
-        prob_fitness = fitness/fitness.sum()
-
-        # roulette probability
-        roulette_prob = np.cumsum(prob_fitness)
-
+        # Run the roulette wheel
         pop_selected = []
-
         while len(pop_selected) < num_selection:
             pick = random.random()
-            for index, individual in enumerate(self.chromosomes): 
-                
+            for index, individual in enumerate(self.chromosomes):
                 if pick < roulette_prob[index]:
                     pop_selected.append(individual)
                     break
 
         return pop_selected
 
+    def operator(self, chromosomes, crossover="arithmetic", mutation="uniform", \
+                 crossover_rate=0.5, mutation_rate=0.1):
+        """Define the genetic operators"""
 
-    """
-    def operators(self, n_pop, tx_crossover = 0.5, tx_mutation = 0.15):
-        '''
-        A partir dos individuos selecionados em 'selecao' com melhor score, duplica os individuos
-        comecando pelo de melhor score ate o numero de individuos chegar ao valor da variavel 'm'.
-        Realiza o Crossing Over e a Mutacao nos individuos novos gerados.
+        new_chromo = self.arithmetic_crossover(chromosomes, mutation, \
+                                               crossover_rate, mutation_rate)
 
-        TODO: Arrumar essas funções de crossover e mutação
+        return new_chromo
 
-        '''
-        # selected pop
-        num_sel_pop = len(self.chromosomes)
+    def arithmetic_crossover(self, selected_pop, mutation, cross_rate=0.4, \
+                             mutation_rate=0.1):
+        """Create a new chromosome using arithmetic crossover"""
 
-        k = 0
-        while len(self.chromosomes) < n_pop :
-            weights = self.chromosomes[k].weights[:]
-            chrom_1 = Chromosome(weights)
-            weights = self.chromosomes[k+1].weights[:]
-            chrom_2 = Chromosome(weights)
+        N_genes    = selected_pop[0].size # Chromosome size
+        new_chromo = [copy.deepcopy(c) for c in selected_pop]
 
-            self.arithmetic_crossover(chrom_1,chrom_2,tx_crossover)
-            self.uniform_mutation(chrom_1,tx_mutation)
-            self.uniform_mutation(chrom_2,tx_mutation)
+        for i in range(0, len(selected_pop), 2):
+            a = random.uniform(0,1)
 
-            self.chromosomes.append(chrom_1)
+            # Select a random number for each parent and compare with the
+            # crossover rate, if both are lower than the crossover rate
+            # apply the crossover. Else, just pass the parents for the new
+            # population.
+            tc_parent_1 = random.randint(0,100)
+            tc_parent_2 = random.randint(0,100)
+            if ( tc_parent_1 < cross_rate*100 and tc_parent_2 < cross_rate*100):
+                try:
+                    for j in range(0, N_genes):
+                        new_chromo[i].bits[j]   = a*new_chromo[i].bits[j] \
+                                                + (1 - a)*new_chromo[i+1].bits[j]
 
-            if len(self.chromosomes) < n_pop:
-                self.chromosomes.append(chrom_2)
+                        new_chromo[i+1].bits[j] = a*new_chromo[i+1].bits[j] \
+                                                + (1 - a)*new_chromo[i].bits[j]
 
-            k += 2
+                    # Apply mutation and recalculates the fitness
+                    self._mutation(new_chromo[i], mutation, )
+                    new_chromo[i].calc_fitness()
+                    self._mutation(new_chromo[i+1], mutation)
+                    new_chromo[i+1].calc_fitness()
 
-        return self
-        """
+                except IndexError:
+                    pass
 
-    ### --------------------- genCrossOver:
-    ## Aplica o crossing over 'numCO' vezes na duplicacao de cada individuo gerada por reproduzir.
-    ## Seleciona randomicamente uma das casas do vetor de peso do individuo[0] (que e' o individuo
-    ## com maior score
-    def uniform_crossover(self, individuo1, individuo2, chanceCO):
-        
-        """
-            Calculate uniform crossover with exchange between cromo genes 
-            param1: individuo1 - frist individual
-            param2: individuo2 - second individual
-            param3: cross_rate - crossover rate, default = 0.4
+        return new_chromo
 
-        """
-        for k in range (len(individuo1.weights)):
-            r = random.random()
-            if r < chanceCO:
-                individuo1.weights[k], individuo2.weights[k] = individuo2.weights[k], individuo1.weights[k]
+    def _mutation(self, chromosome, type, mutation_rate):
+        """Select mutation type
 
-    # arithmetic crossover with cross_point
-    def arithmetic_crossover(self, selected_pop , cross_rate = 0.4):
-        """
-            Calculate arithmetic crossover with cross point
-            param1: selected_pop - pop choiced in selection role
-            param2: cross_rate - crossover rate, default = 0.4
+        Args:
+            chromosome : Chromosome to apply mutation
+            type       : Select the mutation type
 
         """
-        
-        # make arithmetic crossover for each individual selected
-        n_pop = len(selected_pop)
 
-        for ichromo in range(0, n_pop, 2): 
-            r = random.random()
-            if r < cross_rate and ichromo+1 < n_pop:
-                cross_point = random.randint(1, len(selected_pop[0].weights)-1)
-                
-                # means for each gene bounded by cross point
-                for i in range(cross_point):
-                    selected_pop[ichromo].weights[i] = (selected_pop[ichromo].weights[i] + selected_pop[ichromo+1].weights[i])/2
-                
-                for j in range(cross_point, len(selected_pop[0].weights)):
-                    selected_pop[ichromo].weights[j] = (selected_pop[ichromo+1].weights[j] + selected_pop[ichromo].weights[j])/2
-        
-        # retunn children in pop
-        return selected_pop
+        if (type == "random-uniform"):
+            self._rand_mutation(chromosome, mutation_rate)
+        else:
+            raise ValueError(f"Type {type} not defined")
 
+    def _rand_mutation(self, chromosome, mutation_rate):
+        """Apply mutation to a specific chromosome using random mutation"""
 
-
-
-    ### ----------------------- genMut:
-    ## Para um 'numMut' de vezes, seleciona uma das casas do vetor de peso de um dos
-    ## individuos duplicados e modifica o valor do peso daquela casa multiplicando-o
-    ## por um numero randomico entre [-1,1].
-    def mutation(self, individuo1, chanceMut):
-        for k1 in range (len(individuo1.weights)):
-            r = random.random()
-            if r < chanceMut:
-                #realizando a mutacao
-                mut = 10 + individuo1.weights[k1]/10.0                   #mut eh um parametro relaxionado com a dispersao possivel de mutacao
-                individuo1.weights[k1] += mut*(2*random.randrange(1000)/1000.0 - 1)       #randomicamente adiciona-se algo entre +- mut no gene
-
-    def uniform_mutation(self, children, mutation_rate):
-        
-        for child in children:
-
-            for point in range(len(children[0].weights)):
+        for chromo in chromosome:
+            for point in range(len(chromosome[0].weights)):
                 if np.random.rand() < mutation_rate:
-                    child.weights[point] = random.uniform(-1.0, 1.0)
-        return children
+                    chromo.weights[point] = random.uniform(-1.0, 1.0)
+        return chromosome
