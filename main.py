@@ -1,6 +1,8 @@
 import tetris_ai.tetris_ai as t
 import tetris_ai.ga as ga
+import tetris_ai.tetris_base as tetris
 import matplotlib.pyplot as plt
+import argparse
 
 def main():
     # GENERAL CONFIG
@@ -32,8 +34,8 @@ def main():
             print(f"Individuo: {(i + 1)}, Score: {genetic_alg.chromosomes[i].score}")
 
         # Select chromosomes using roulette method
-        selected_pop = genetic_alg.roulette(N_SELECTION, best_pop_score, \
-                                            avg_pop_gen, best_chromos)
+        selected_pop = genetic_alg.selection(genetic_alg.chromosomes, NUM_POP, \
+                                             type="roulette")
         # Apply crossover and mutation
         new_chromo   = genetic_alg.operator(selected_pop, \
                                             crossover="uniform", \
@@ -42,38 +44,35 @@ def main():
                                             mutation_rate=MUTATION_RATE)
 
         # Insert new children in pop
-        genetic_alg.chromosomes[-(len(new_chldren)):] = new_chromo
+        genetic_alg.chromosomes[-(len(new_chromo)):] = new_chromo
 
     return best_chromos
 
 if __name__ == "__main__":
-    # test looking for better chomossome
-    # by genetic algorithm
-    best_chromos = main()
+    # Define argparse options
+    parser = argparse.ArgumentParser(description="Tetris AI")
+    parser.add_argument('--train',
+                        action='store_true',
+                        help='Whether or not to train the AI')
+    parser.add_argument('--game',
+                        action='store_true',
+                        help='Run the base game without AI')
 
-    """
-    # play game to the best chromos
-    for chromo in best_chromos:
-        print("bests chromo\n\n")
-        # run game with choiced cromo
-        t.run_game(chromo, 200, max_score=200000)
-    """
+    args = parser.parse_args()
 
-    """
-    # test for one especific cromossomo
-    # generate weight randomly
-    numPesos = 7
-    pesos0 = numPesos*[0]
-    for k2 in range (0,numPesos):
-        pesos0[k2] = 2*random.random()-1
+    if (args.train):
+        # Train the AI and after play the game with the get chromosome
+        best_chromos = main()
 
-    # choice especific weight
-    pesos0 = [-0.97, 5.47, -13.74, -0.73,  7.99, -0.86, -0.72]
+    elif (args.game):
+        # Just run the base game
+        tetris.MANUAL_GAME = True
+        tetris.main()
 
-    genetic_alg = ga.GA(10)
+    else:
+        # Run tetris AI with optimal weights
+        # FIXME: Define the optimal weights
+        optimal_weights = [-0.97, 5.47, -13.74, -0.73,  7.99, -0.86, -0.72]
+        chromo = ga.Chromosome(optimal_weights)
+        t.run_game(chromo, speed=600, max_score=200000, show_game=True)
 
-    # run game with choiced cromo
-    indiv = ga.Chromosome(pesos0)
-    t.run_game(indiv, 300, max_score=200000)
-
-    """
