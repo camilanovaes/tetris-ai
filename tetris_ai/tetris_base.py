@@ -12,11 +12,11 @@ from pygame.locals import *
 
 # Board config
 FPS          = 25
-WINDOWWIDTH  = 640
-WINDOWHEIGHT = 480
-BOXSIZE      = 20
+WINDOWWIDTH  = 650
+WINDOWHEIGHT = 690
+BOXSIZE      = 25
 BOARDWIDTH   = 10
-BOARDHEIGHT  = 20
+BOARDHEIGHT  = 25
 BLANK        = '.'
 XMARGIN      = int((WINDOWWIDTH - BOARDWIDTH * BOXSIZE) / 2)
 TOPMARGIN    = WINDOWHEIGHT - (BOARDHEIGHT * BOXSIZE) - 5
@@ -171,8 +171,8 @@ PIECES = {'S': S_SHAPE_TEMPLATE,
           'O': O_SHAPE_TEMPLATE,
           'T': T_SHAPE_TEMPLATE}
 
-# TODO: Add comment
-manual_game = False
+# Define if the game is manual or not
+MANUAL_GAME = False
 
 ##############################################################################
 # MAIN GAME
@@ -187,7 +187,7 @@ def main():
     BIGFONT     = pygame.font.Font('freesansbold.ttf', 100)
     pygame.display.set_caption('Tetris AI')
 
-    if (manual_game):
+    if (MANUAL_GAME):
         run_game()
 
 def run_game():
@@ -425,9 +425,10 @@ def calc_level_and_fall_freq(score):
         score: game score
 
     """
-    level = int(score / 400) + 1
+    level     = int(score / 400) + 1
     fall_freq = 0.27 - (level * 0.02)
-    if not manual_game:
+
+    if (not MANUAL_GAME):
         fall_freq = 0.00
 
     return level, fall_freq
@@ -581,13 +582,13 @@ def draw_status(score, level):
     # Draw the score text
     score_surf = BASICFONT.render('Score: %s' % score, True, TEXTCOLOR)
     score_rect = score_surf.get_rect()
-    score_rect.topleft = (WINDOWWIDTH - 150, 20)
+    score_rect.topleft = (WINDOWWIDTH - 150, 80)
     DISPLAYSURF.blit(score_surf, score_rect)
 
     # draw the level text
     levelSurf = BASICFONT.render('Level: %s' % level, True, TEXTCOLOR)
     levelRect = levelSurf.get_rect()
-    levelRect.topleft = (WINDOWWIDTH - 150, 50)
+    levelRect.topleft = (WINDOWWIDTH - 150, 110)
     DISPLAYSURF.blit(levelSurf, levelRect)
 
 
@@ -614,11 +615,11 @@ def draw_next_piece(piece):
     # draw the "next" text
     next_surf = BASICFONT.render('Next:', True, TEXTCOLOR)
     next_rect = next_surf.get_rect()
-    next_rect.topleft = (WINDOWWIDTH - 120, 80)
+    next_rect.topleft = (WINDOWWIDTH - 150, 160)
     DISPLAYSURF.blit(next_surf, next_rect)
 
     # draw the "next" piece
-    draw_piece(piece, pixelx=WINDOWWIDTH-120, pixely=100)
+    draw_piece(piece, pixelx=WINDOWWIDTH-150, pixely=160)
 
 
 ##############################################################################
@@ -747,7 +748,7 @@ def calc_sides_in_contact(board, piece):
             elif piece['x']+Px < BOARDWIDTH and piece['x']+Px >= 0 and piece['y']+Py < BOARDHEIGHT and not board[piece['x']+Px][piece['y']+Py] == BLANK:  #quadrante do tabuleiro colorido mas nao do template
 
                 # O quadrante vazio do template esta colorido no tabuleiro
-                if not PIECES[piece['shape']][piece['rotation']][Py-1][Px] == BLANK: 
+                if not PIECES[piece['shape']][piece['rotation']][Py-1][Px] == BLANK:
                     piece_sides += 1
 
                 if Px > 0 and not PIECES[piece['shape']][piece['rotation']][Py][Px-1] == BLANK:
@@ -759,7 +760,3 @@ def calc_sides_in_contact(board, piece):
                     #(nao pode haver pecas em cima)
 
     return  piece_sides, floor_sides, wall_sides
-
-if __name__ == '__main__':
-    manual_game = True
-    main()

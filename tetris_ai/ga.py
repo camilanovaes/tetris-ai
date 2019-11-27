@@ -131,7 +131,7 @@ class GA:
                              mutation_rate=0.1):
         """Create a new chromosome using arithmetic crossover"""
 
-        N_genes    = selected_pop[0].size # Chromosome size
+        N_genes    = len(selected_pop[0].weights) # Chromosome size
         new_chromo = [copy.deepcopy(c) for c in selected_pop]
 
         for i in range(0, len(selected_pop), 2):
@@ -146,16 +146,16 @@ class GA:
             if ( tc_parent_1 < cross_rate*100 and tc_parent_2 < cross_rate*100):
                 try:
                     for j in range(0, N_genes):
-                        new_chromo[i].bits[j]   = a*new_chromo[i].bits[j] \
-                                                + (1 - a)*new_chromo[i+1].bits[j]
+                        new_chromo[i].weights[j]   = a*new_chromo[i].weights[j] \
+                                                + (1 - a)*new_chromo[i+1].weights[j]
 
-                        new_chromo[i+1].bits[j] = a*new_chromo[i+1].bits[j] \
-                                                + (1 - a)*new_chromo[i].bits[j]
+                        new_chromo[i+1].weights[j] = a*new_chromo[i+1].weights[j] \
+                                                + (1 - a)*new_chromo[i].weights[j]
 
                     # Apply mutation and recalculates the fitness
-                    self._mutation(new_chromo[i], mutation, )
+                    self._mutation(new_chromo[i], mutation, mutation_rate)
                     new_chromo[i].calc_fitness()
-                    self._mutation(new_chromo[i+1], mutation)
+                    self._mutation(new_chromo[i+1], mutation, mutation_rate)
                     new_chromo[i+1].calc_fitness()
 
                 except IndexError:
@@ -172,7 +172,7 @@ class GA:
 
         """
 
-        if (type == "random-uniform"):
+        if (type == "random"):
             self._rand_mutation(chromosome, mutation_rate)
         else:
             raise ValueError(f"Type {type} not defined")
@@ -180,8 +180,7 @@ class GA:
     def _rand_mutation(self, chromosome, mutation_rate):
         """Apply mutation to a specific chromosome using random mutation"""
 
-        for chromo in chromosome:
-            for point in range(len(chromosome[0].weights)):
-                if np.random.rand() < mutation_rate:
-                    chromo.weights[point] = random.uniform(-1.0, 1.0)
+        for point in chromosome.weights:
+            if np.random.rand() < mutation_rate:
+                chromosome.weights[point] = random.uniform(-1.0, 1.0)
         return chromosome
