@@ -1,14 +1,19 @@
 # 2019-evol-comp-ufpa
 
 ## Usage:
-Run GA:
+To run Tetris AI with optimal parameters:
 ```
 python3 main.py
 ```
 
-Run base game:
+To run GA training:
 ```
-python3 tetris_ai/tetris_base.py
+python3 main.py --train
+```
+
+To run base game:
+```
+python3 main.py --game
 ```
 
 ## References:
