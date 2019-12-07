@@ -622,6 +622,16 @@ def draw_next_piece(piece):
     draw_piece(piece, pixelx=WINDOWWIDTH-150, pixely=160)
 
 
+def draw_chromo_info(chromosome):
+    """Draw chromosome information"""
+
+    # Draw the score text
+    ga_surf = BASICFONT.render('Teste: %s' % 1, True, TEXTCOLOR)
+    ga_rect = ga_surf.get_rect()
+    ga_rect.topleft = (WINDOWWIDTH - 150, 350)
+    DISPLAYSURF.blit(ga_surf, ga_rect)
+
+
 ##############################################################################
 # GAME STATISTICS FUNCTIONS
 ##############################################################################

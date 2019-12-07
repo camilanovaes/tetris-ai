@@ -2,19 +2,14 @@ import pygame
 import random
 import numpy as np
 import copy
-import tetris_ai.tetris_base as t
+import tetris_ai.tetris_base as game
+import tetris_ai.tetris_ai as ai
 
 
 class Chromosome():
     def __init__(self, weights):
         self.weights = weights
         self.score   = 0
-
-    def __str__(self):
-        s = "   Weights:"
-        for i in range(len(self.weights)):
-            s += "%5.2f "%(self.weights[i])
-        return s
 
     def calc_fitness(self, game_state):
         """Calculate fitness"""
@@ -31,12 +26,12 @@ class Chromosome():
         best_score = -100000    # Melhor pontuação
 
         # Calculate the total the holes and blocks above holes before play
-        num_holes_bef, num_blocking_blocks_bef = t.calc_initial_move_info(board)
-        for r in range(len(t.PIECES[piece['shape']])):
+        num_holes_bef, num_blocking_blocks_bef = game.calc_initial_move_info(board)
+        for r in range(len(game.PIECES[piece['shape']])):
             # Iterate through every possible rotation
-            for x in range(-2,t.BOARDWIDTH-2):
+            for x in range(-2,game.BOARDWIDTH-2):
                 #Iterate through every possible position
-                movement_info = t.calc_move_info(board, piece, x, r, \
+                movement_info = game.calc_move_info(board, piece, x, r, \
                                                  num_holes_bef, \
                                                  num_blocking_blocks_bef)
 
@@ -69,16 +64,14 @@ class GA:
     def __init__ (self, num_pop, num_weights=7, lb=-1, ub=1):
         self.chromosomes = []
 
-        for _ in range(num_pop):
+        for i in range(num_pop):
             weights = np.random.uniform(lb, ub, size=(num_weights))
             chrom   = Chromosome(weights)
             self.chromosomes.append(chrom)
 
-    def __str__(self):
-        for i in range(len(self.chromosomes)):
-            print("Individuo %d:"%i)
-            print(self.chromosomes[i])
-        return ''
+            # Evaluate fitness
+            game_state = ai.run_game(self.chromosomes[i], 1000, 200000, False)
+            self.chromosomes[i].calc_fitness(game_state)
 
     def selection(self, chromosomes, num_selection, type = "roulette"):
         """Define the selection method to use
@@ -122,12 +115,16 @@ class GA:
                  crossover_rate=0.5, mutation_rate=0.1):
         """Define the genetic operators"""
 
-        new_chromo = self.arithmetic_crossover(chromosomes, mutation, \
+        # Apply crossover
+        new_chromo = self._arithmetic_crossover(chromosomes, mutation, \
                                                crossover_rate, mutation_rate)
+
+        # Apply mutation
+        self.mutation(new_chromo, mutation, mutation_rate)
 
         return new_chromo
 
-    def arithmetic_crossover(self, selected_pop, mutation, cross_rate=0.4, \
+    def _arithmetic_crossover(self, selected_pop, mutation, cross_rate=0.4, \
                              mutation_rate=0.1):
         """Create a new chromosome using arithmetic crossover"""
 
@@ -135,7 +132,7 @@ class GA:
         new_chromo = [copy.deepcopy(c) for c in selected_pop]
 
         for i in range(0, len(selected_pop), 2):
-            a = random.uniform(0,1)
+            a = random.random()
 
             # Select a random number for each parent and compare with the
             # crossover rate, if both are lower than the crossover rate
@@ -152,18 +149,12 @@ class GA:
                         new_chromo[i+1].weights[j] = a*new_chromo[i+1].weights[j] \
                                                 + (1 - a)*new_chromo[i].weights[j]
 
-                    # Apply mutation and recalculates the fitness
-                    self._mutation(new_chromo[i], mutation, mutation_rate)
-                    new_chromo[i].calc_fitness()
-                    self._mutation(new_chromo[i+1], mutation, mutation_rate)
-                    new_chromo[i+1].calc_fitness()
-
                 except IndexError:
                     pass
 
         return new_chromo
 
-    def _mutation(self, chromosome, type, mutation_rate):
+    def mutation(self, chromosome, type, mutation_rate):
         """Select mutation type
 
         Args:
@@ -180,7 +171,8 @@ class GA:
     def _rand_mutation(self, chromosome, mutation_rate):
         """Apply mutation to a specific chromosome using random mutation"""
 
-        for point in chromosome.weights:
-            if np.random.rand() < mutation_rate:
-                chromosome.weights[point] = random.uniform(-1.0, 1.0)
-        return chromosome
+        for chromo in chromosome:
+            for i, point in enumerate(chromo.weights):
+                if random.random() < mutation_rate:
+                    chromo.weights[i] = random.uniform(-1.0, 1.0)
+

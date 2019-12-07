@@ -1,22 +1,21 @@
 import random, time, pygame, sys
 from pygame.locals import *
-import tetris_ai.tetris_base as t
-import tetris_ai.ga
+import tetris_ai.tetris_base as game
 
 size   = [640, 480]
 screen = pygame.display.set_mode((size[0], size[1]))
 
-def run_game(chromosome, speed, max_score = 20000, show_game = False):
+def run_game(chromosome, speed, max_score = 20000, no_show = False):
 
-    t.FPS = int(speed)
-    t.main()
+    game.FPS = int(speed)
+    game.main()
 
-    board            = t.get_blank_board()
+    board            = game.get_blank_board()
     last_fall_time   = time.time()
     score            = 0
-    level, fall_freq = t.calc_level_and_fall_freq(score)
-    falling_piece    = t.get_new_piece()
-    next_piece       = t.get_new_piece()
+    level, fall_freq = game.calc_level_and_fall_freq(score)
+    falling_piece    = game.get_new_piece()
+    next_piece       = game.get_new_piece()
 
     # Calculate best move
     chromosome.calc_best_move(board, falling_piece)
@@ -37,10 +36,10 @@ def run_game(chromosome, speed, max_score = 20000, show_game = False):
         if falling_piece == None:
             # No falling piece in play, so start a new piece at the top
             falling_piece = next_piece
-            next_piece    = t.get_new_piece()
+            next_piece    = game.get_new_piece()
 
             # Decide the best move based on your weights
-            chromosome.calc_best_move(board, falling_piece, show_game)
+            chromosome.calc_best_move(board, falling_piece, no_show)
 
             # Update number of used pieces and the score
             num_used_pieces +=1
@@ -49,22 +48,22 @@ def run_game(chromosome, speed, max_score = 20000, show_game = False):
             # Reset last_fall_time
             last_fall_time = time.time()
 
-            if (not t.is_valid_position(board, falling_piece)):
+            if (not game.is_valid_position(board, falling_piece)):
                 # GAME-OVER
                 # Can't fit a new piece on the board, so game over.
                 alive = False
 
-        if show_game or time.time() - last_fall_time > fall_freq:
-            if (not t.is_valid_position(board, falling_piece, adj_Y=1)):
+        if no_show or time.time() - last_fall_time > fall_freq:
+            if (not game.is_valid_position(board, falling_piece, adj_Y=1)):
                 # Falling piece has landed, set it on the board
-                t.add_to_board(board, falling_piece)
+                game.add_to_board(board, falling_piece)
 
                 # Bonus score for complete lines at once
                 # 40   pts for 1 line
                 # 120  pts for 2 lines
                 # 300  pts for 3 lines
                 # 1200 pts for 4 lines
-                num_removed_lines = t.remove_complete_lines(board)
+                num_removed_lines = game.remove_complete_lines(board)
                 if(num_removed_lines == 1):
                     score += 40
                     removed_lines[0] += 1
@@ -84,8 +83,9 @@ def run_game(chromosome, speed, max_score = 20000, show_game = False):
                 falling_piece['y'] += 1
                 last_fall_time = time.time()
 
-        if (not show_game):
-            draw_game_on_screen(board, score, level, next_piece, falling_piece)
+        if (not no_show):
+            draw_game_on_screen(board, score, level, next_piece, falling_piece,
+                                chromosome)
 
         # Stop condition
         if (score > max_score):
@@ -97,16 +97,17 @@ def run_game(chromosome, speed, max_score = 20000, show_game = False):
 
     return game_state
 
-def draw_game_on_screen(board, score, level, next_piece, falling_piece):
+def draw_game_on_screen(board, score, level, next_piece, falling_piece, chromosome):
     """Draw game on the screen"""
 
-    t.DISPLAYSURF.fill(t.BGCOLOR)
-    t.draw_board(board)
-    t.draw_status(score, level)
-    t.draw_next_piece(next_piece)
+    game.DISPLAYSURF.fill(game.BGCOLOR)
+    game.draw_board(board)
+    game.draw_status(score, level)
+    game.draw_next_piece(next_piece)
+    game.draw_chromo_info(chromosome)
 
     if falling_piece != None:
-        t.draw_piece(falling_piece)
+        game.draw_piece(falling_piece)
 
     pygame.display.update()
-    t.FPSCLOCK.tick(t.FPS)
+    game.FPSCLOCK.tick(game.FPS)
