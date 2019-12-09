@@ -34,7 +34,7 @@ class Chromosome():
                 movement_info = game.calc_move_info(board, piece, x, r, \
                                                  num_holes_bef, \
                                                  num_blocking_blocks_bef)
-
+ 
                 # Check if it's a valid movement
                 if (movement_info[0]):
                     # Calculate movement score
@@ -70,7 +70,7 @@ class GA:
             self.chromosomes.append(chrom)
 
             # Evaluate fitness
-            game_state = ai.run_game(self.chromosomes[i], 1000, 200000, False)
+            game_state = ai.run_game(self.chromosomes[i], 1000, 200000, True)
             self.chromosomes[i].calc_fitness(game_state)
 
     def selection(self, chromosomes, num_selection, type = "roulette"):

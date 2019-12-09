@@ -1,15 +1,19 @@
 import tetris_ai.ga as ga
 import tetris_ai.tetris_base as game
 import tetris_ai.tetris_ai as ai
+import tetris_ai.analyser as analyser
 import matplotlib.pyplot as plt
-import argparse
+import argparse, copy
 
-def main(no_show):
+def main(no_show_game):
     # GENERAL CONFIG
-    NUM_GEN        = 3
-    NUM_POP        = 3
-    MUTATION_RATE  = 0.3
+    GAME_SPEED     = 600
+    NUM_GEN        = 30
+    NUM_POP        = 15
+    NUM_EXP        = 10
+    MUTATION_RATE  = 0.2
     CROSSOVER_RATE = 0.75
+    MAX_SCORE      = 200000
 
     genetic_alg    = ga.GA(NUM_POP)
 
@@ -17,39 +21,66 @@ def main(no_show):
     best_pop_score = []
     avg_pop_gen    = []
 
-    game_speed     = 600
+    # Define datasets
+    experiments = []
+    best_chromo = []
 
-    for j in range(NUM_GEN):
-        print (' \n')
-        print (f' - - - - Geração atual: {j+1} - - - - ')
-        print (' \n')
+    # Initialize population
+    init_pop    = ga.GA(NUM_POP)
 
-        # Select chromosomes using roulette method
-        selected_pop = genetic_alg.selection(genetic_alg.chromosomes, NUM_POP, \
-                                             type="roulette")
-        # Apply crossover and mutation
-        new_chromo   = genetic_alg.operator(selected_pop, \
-                                            crossover="uniform", \
-                                            mutation="random", \
-                                            crossover_rate=CROSSOVER_RATE, \
-                                            mutation_rate=MUTATION_RATE)
+    for e in range(NUM_EXP):
+        # Make a copy from initial population so that we can run all experiments
+        # with the same initial population
+        pop         = copy.deepcopy(init_pop)
 
-        for i in range(NUM_POP):
-            # Run the game for each chromosome
-            game_state = ai.run_game(genetic_alg.chromosomes[i], game_speed, \
-                                    max_score = 200000, no_show = no_show)
-            # Calculate the fitness
-            genetic_alg.chromosomes[i].calc_fitness(game_state)
+        # Initialize generation list
+        generations = []
 
-            # Print information
-            print(f"Individuo: {(i + 1)}:")
-            print(f"   Score: {genetic_alg.chromosomes[i].score}")
-            print(f"   Weights: {genetic_alg.chromosomes[i].weights}")
-            print('--')
+        for g in range(NUM_GEN):
+            print (' \n')
+            print (f' - - - - Exp: {e}\t Geração: {g} - - - - ')
+            print (' \n')
 
-        # Insert new children in pop
-        genetic_alg.chromosomes[-(len(new_chromo)):] = new_chromo
+            # Save generation
+            generations.append(copy.deepcopy(pop))
 
+            # Select chromosomes using roulette method
+            selected_pop = pop.selection(pop.chromosomes, NUM_POP, \
+                                         type="roulette")
+            # Apply crossover and mutation
+            new_chromo   = pop.operator(selected_pop, \
+                                        crossover="uniform", \
+                                        mutation="random", \
+                                        crossover_rate=CROSSOVER_RATE, \
+                                        mutation_rate=MUTATION_RATE)
+
+            for i in range(NUM_POP):
+                # Print chromosome information
+                print(f"Individuo: {(i + 1)}:")
+                print(f"   Weights: {pop.chromosomes[i].weights}")
+
+                # Run the game for each chromosome
+                game_state = ai.run_game(pop.chromosomes[i], GAME_SPEED, \
+                                         MAX_SCORE, no_show_game)
+                # Calculate the fitness
+                new_chromo[i].calc_fitness(game_state)
+
+                print(f"   Score: {pop.chromosomes[i].score}")
+                print('--')
+
+            # Insert new children in pop
+            pop.chromosomes[-(len(new_chromo)):] = new_chromo
+
+        # Save experiments results
+        experiments.append(generations)
+
+        # Plot results
+    an = analyser.Analyser(experiments)
+    an.plot(type="best")
+    an.plot(type="pop")
+    an.plot(type="mdf", show_std=False)
+
+    #TODO: Select the best choromosome from all generation and experiments
     return best_chromos
 
 if __name__ == "__main__":
@@ -82,4 +113,3 @@ if __name__ == "__main__":
         optimal_weights = [-0.97, 5.47, -13.74, -0.73,  7.99, -0.86, -0.72]
         chromo = ga.Chromosome(optimal_weights)
         ai.run_game(chromo, speed=600, max_score=200000, no_show=False)
-
