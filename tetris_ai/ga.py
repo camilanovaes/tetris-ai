@@ -32,8 +32,8 @@ class Chromosome():
             for x in range(-2,game.BOARDWIDTH-2):
                 #Iterate through every possible position
                 movement_info = game.calc_move_info(board, piece, x, r, \
-                                                 num_holes_bef, \
-                                                 num_blocking_blocks_bef)
+                                                    num_holes_bef, \
+                                                    num_blocking_blocks_bef)
  
                 # Check if it's a valid movement
                 if (movement_info[0]):

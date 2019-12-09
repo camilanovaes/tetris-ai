@@ -61,11 +61,12 @@ class Analyser():
 
             experiment.append(generation)
 
-            best = np.amax(experiment)
-            if (best > self.best):
-                self.best    = best
-                i_best       = np.argmax(experiment)
-                self.weights = gen.chromosomes[i_best].weights
+            #FIXME:
+            #best = np.amax(experiment)
+            #if (best > self.best):
+            #    self.best    = best
+            #    i_best       = np.argmax(experiment)
+            #    self.weights = gen.chromosomes[i_best].weights
 
             if (show_chromosomes):
                 plt.plot(np.arange(1,N_gen+1), generation, marker='o',

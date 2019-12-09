@@ -10,8 +10,8 @@ def main(no_show_game):
     # GENERAL CONFIG
     GAME_SPEED     = 600
     NUM_GEN        = 100
-    NUM_POP        = 20
-    NUM_EXP        = 5
+    NUM_POP        = 15
+    NUM_EXP        = 10
     GAP            = 0.3
     NUM_CHILD      = round(NUM_POP*GAP)
     MUTATION_RATE  = 0.2
@@ -107,8 +107,9 @@ if __name__ == "__main__":
     if (args.train):
         # Train the AI and after play the game with the get chromosome
         best_chromos = main(args.no_show)
-        chromo       = ga.Chromosome(best_chromos)
-        ai.run_game(chromo, speed=500, max_score=200000, no_show=False)
+        #FIXME:
+        #chromo       = ga.Chromosome(best_chromos)
+        #ai.run_game(chromo, speed=500, max_score=200000, no_show=False)
 
     elif (args.game):
         # Just run the base game

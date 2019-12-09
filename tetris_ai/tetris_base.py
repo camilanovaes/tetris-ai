@@ -689,9 +689,6 @@ def calc_heuristics(board, x):
     The heuristics are composed by: number of holes, number of blocks above
     hole and maximum height.
 
-    #TODO: Verificar se está sendo calculado corretamente. Podemos usar unit
-    test como em: https://github.com/jgardner8/genetic-tetris-ai/blob/master/heuristic_tests.py
-
     """
     total_holes        = 0
     locals_holes       = 0
@@ -715,8 +712,7 @@ def calc_heuristics(board, x):
     return total_holes, blocks_above_holes, sum_heights
 
 def calc_sides_in_contact(board, piece):
-    """TODO: Entender essa função
-    """
+    """Calculate sides in contacts"""
 
     piece_sides = 0
     floor_sides = 0
