@@ -97,6 +97,7 @@ class Analyser():
 
                 with open('plots/info.txt', 'a') as fd:
                     fd.write(f"{label}: fitness = {result}\n")
+                    fd.write(f"Weights: {self.weights}")
                     fd.write("\n")
 
 

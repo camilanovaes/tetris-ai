@@ -104,7 +104,6 @@ def draw_game_on_screen(board, score, level, next_piece, falling_piece, chromoso
     game.draw_board(board)
     game.draw_status(score, level)
     game.draw_next_piece(next_piece)
-    game.draw_chromo_info(chromosome)
 
     if falling_piece != None:
         game.draw_piece(falling_piece)
