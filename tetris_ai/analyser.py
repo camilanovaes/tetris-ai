@@ -1,9 +1,12 @@
 import numpy as np
+import pdb
 import matplotlib.pyplot as plt
 
 class Analyser():
     def __init__(self, data):
-        self.data  = data
+        self.data    = data
+        self.best    = 0
+        self.weights = []
 
     def plot(self, type, show_mean=True, show_std=True,
              show_chromosomes=True, results=True, save=True):
@@ -37,7 +40,7 @@ class Analyser():
 
         experiment = []
 
-        for exp in self.data:
+        for i, exp in enumerate(self.data):
             generation = []
             N_gen      = len(exp)
 
@@ -57,6 +60,12 @@ class Analyser():
                 generation.append(value)
 
             experiment.append(generation)
+
+            best = np.amax(experiment)
+            if (best > self.best):
+                self.best    = best
+                i_best       = np.argmax(experiment)
+                self.weights = gen.chromosomes[i_best].weights
 
             if (show_chromosomes):
                 plt.plot(np.arange(1,N_gen+1), generation, marker='o',
