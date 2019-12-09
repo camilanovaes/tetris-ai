@@ -4,13 +4,16 @@ import tetris_ai.tetris_ai as ai
 import tetris_ai.analyser as analyser
 import matplotlib.pyplot as plt
 import argparse, copy
+import pdb
 
 def main(no_show_game):
     # GENERAL CONFIG
     GAME_SPEED     = 600
-    NUM_GEN        = 30
-    NUM_POP        = 15
-    NUM_EXP        = 10
+    NUM_GEN        = 100
+    NUM_POP        = 20
+    NUM_EXP        = 2
+    GAP            = 0.3
+    NUM_CHILD      = round(NUM_POP*GAP)
     MUTATION_RATE  = 0.2
     CROSSOVER_RATE = 0.75
     MAX_SCORE      = 200000
@@ -45,7 +48,7 @@ def main(no_show_game):
             generations.append(copy.deepcopy(pop))
 
             # Select chromosomes using roulette method
-            selected_pop = pop.selection(pop.chromosomes, NUM_POP, \
+            selected_pop = pop.selection(pop.chromosomes, NUM_CHILD, \
                                          type="roulette")
             # Apply crossover and mutation
             new_chromo   = pop.operator(selected_pop, \
@@ -54,9 +57,9 @@ def main(no_show_game):
                                         crossover_rate=CROSSOVER_RATE, \
                                         mutation_rate=MUTATION_RATE)
 
-            for i in range(NUM_POP):
+            for i in range(NUM_CHILD):
                 # Print chromosome information
-                print(f"Individuo: {(i + 1)}:")
+                print(f"Novo indivíduo: {(i + 1)}:")
                 print(f"   Weights: {pop.chromosomes[i].weights}")
 
                 # Run the game for each chromosome
@@ -69,7 +72,9 @@ def main(no_show_game):
                 print('--')
 
             # Insert new children in pop
-            pop.chromosomes[-(len(new_chromo)):] = new_chromo
+            pop.replace(new_chromo)
+            fitness = [chrom.score for chrom in pop.chromosomes]
+            print(fitness)
 
         # Save experiments results
         experiments.append(generations)

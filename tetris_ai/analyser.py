@@ -7,7 +7,7 @@ class Analyser():
 
     def plot(self, type, show_mean=True, show_std=True,
              show_chromosomes=True, results=True, save=True):
-    """
+        """
         Args:
             type             : Select plot type: best or pop
             show_mean        : Whether to show mean
