@@ -11,7 +11,7 @@ def main(no_show_game):
     GAME_SPEED     = 600
     NUM_GEN        = 100
     NUM_POP        = 20
-    NUM_EXP        = 2
+    NUM_EXP        = 5
     GAP            = 0.3
     NUM_CHILD      = round(NUM_POP*GAP)
     MUTATION_RATE  = 0.2
@@ -85,8 +85,9 @@ def main(no_show_game):
     an.plot(type="pop")
     an.plot(type="mdf", show_std=False)
 
-    #TODO: Select the best choromosome from all generation and experiments
-    return best_chromos
+
+    #Return the best choromosome from all generation and experiments
+    return an.weights
 
 if __name__ == "__main__":
     # Define argparse options
@@ -106,6 +107,8 @@ if __name__ == "__main__":
     if (args.train):
         # Train the AI and after play the game with the get chromosome
         best_chromos = main(args.no_show)
+        chromo       = ga.Chromosome(best_chromos)
+        ai.run_game(chromo, speed=500, max_score=200000, no_show=False)
 
     elif (args.game):
         # Just run the base game
