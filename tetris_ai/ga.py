@@ -176,3 +176,11 @@ class GA:
                 if random.random() < mutation_rate:
                     chromo.weights[i] = random.uniform(-1.0, 1.0)
 
+    def replace(self, new_chromo):
+        """Replace chromosomes from population with the new ones"""
+
+        new_pop = sorted(self.chromosomes, key=lambda x: x.score, reverse=True)
+        new_pop[-(len(new_chromo)):] = new_chromo
+        random.shuffle(new_pop)
+
+        self.chromosomes = new_pop
