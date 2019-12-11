@@ -73,6 +73,14 @@ class GA:
             game_state = ai.run_game(self.chromosomes[i], 1000, 200000, True)
             self.chromosomes[i].calc_fitness(game_state)
 
+    def __str__(self):
+        for i, chromo in enumerate(self.chromosomes):
+            print(f"Inidividuo {i+1}")
+            print(f"   Weights: {chromo.weights}")
+            print(f"   Score: {chromo.score}")
+
+        return ''
+
     def selection(self, chromosomes, num_selection, type = "roulette"):
         """Define the selection method to use
 

@@ -58,23 +58,19 @@ def main(no_show_game):
                                         mutation_rate=MUTATION_RATE)
 
             for i in range(NUM_CHILD):
-                # Print chromosome information
-                print(f"Novo indivíduo: {(i + 1)}:")
-                print(f"   Weights: {pop.chromosomes[i].weights}")
-
                 # Run the game for each chromosome
                 game_state = ai.run_game(pop.chromosomes[i], GAME_SPEED, \
                                          MAX_SCORE, no_show_game)
                 # Calculate the fitness
                 new_chromo[i].calc_fitness(game_state)
 
-                print(f"   Score: {pop.chromosomes[i].score}")
-                print('--')
-
             # Insert new children in pop
             pop.replace(new_chromo)
             fitness = [chrom.score for chrom in pop.chromosomes]
             print(fitness)
+
+            # Print population
+            print(pop)
 
         # Save experiments results
         experiments.append(generations)
