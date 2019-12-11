@@ -95,7 +95,7 @@ if __name__ == "__main__":
                         action='store_true',
                         help='Run the base game without AI')
     parser.add_argument('--no-show',
-                        action='store_true',
+                        action='store_false',
                         help='Whether to show the game')
 
     args = parser.parse_args()
