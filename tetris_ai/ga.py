@@ -76,7 +76,7 @@ class GA:
                 game_state = ai.run_game(self.chromosomes[i], 1000, 200000, True)
                 fitness += game_state[2]
 
-            self.chromosomes[i].calc_fitness(fitness/3)
+            self.chromosomes[i].calc_fitness(round(fitness/3))
 
     def __str__(self):
         for i, chromo in enumerate(self.chromosomes):

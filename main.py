@@ -66,7 +66,7 @@ def main(no_show_game):
                     fitness += game_state[2]
 
                 # Calculate the fitness
-                new_chromo[i].calc_fitness(fitness/3)
+                new_chromo[i].calc_fitness(round(fitness/3))
 
             # Insert new children in pop
             pop.replace(new_chromo)
