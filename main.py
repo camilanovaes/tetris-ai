@@ -59,10 +59,14 @@ def main(no_show_game):
 
             for i in range(NUM_CHILD):
                 # Run the game for each chromosome
-                game_state = ai.run_game(pop.chromosomes[i], GAME_SPEED, \
-                                         MAX_SCORE, no_show_game)
+                fitness = 0
+                for j in range(3):
+                    game_state = ai.run_game(pop.chromosomes[i], GAME_SPEED, \
+                                             MAX_SCORE, no_show_game)
+                    fitness += game_state[2]
+
                 # Calculate the fitness
-                new_chromo[i].calc_fitness(game_state)
+                new_chromo[i].calc_fitness(fitness/3)
 
             # Insert new children in pop
             pop.replace(new_chromo)

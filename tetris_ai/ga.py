@@ -11,9 +11,10 @@ class Chromosome():
         self.weights = weights
         self.score   = 0
 
-    def calc_fitness(self, game_state):
+    def calc_fitness(self, fitness):
         """Calculate fitness"""
-        self.score = game_state[2]
+        #self.score = game_state[2]
+        self.score = fitness
 
     def calc_best_move(self, board, piece, show_game = False):
         """Calculate best movement
@@ -70,8 +71,12 @@ class GA:
             self.chromosomes.append(chrom)
 
             # Evaluate fitness
-            game_state = ai.run_game(self.chromosomes[i], 1000, 200000, True)
-            self.chromosomes[i].calc_fitness(game_state)
+            fitness = 0
+            for j in range(3):
+                game_state = ai.run_game(self.chromosomes[i], 1000, 200000, True)
+                fitness += game_state[2]
+
+            self.chromosomes[i].calc_fitness(fitness/3)
 
     def __str__(self):
         for i, chromo in enumerate(self.chromosomes):
