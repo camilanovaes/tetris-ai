@@ -8,7 +8,7 @@ python3 main.py
 
 To run GA training:
 ```
-python3 main.py --train
+python3 main.py --train --no-show
 ```
 
 To run base game:
