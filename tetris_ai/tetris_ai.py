@@ -1,7 +1,8 @@
-import random, time, pygame, sys
+import random, time, pygame, sys, os
 from pygame.locals import *
 import tetris_ai.tetris_base as game
 
+os.environ['SDL_VIDEODRIVER'] = 'dummy'
 size   = [640, 480]
 screen = pygame.display.set_mode((size[0], size[1]))
 
