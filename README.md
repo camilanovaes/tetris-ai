@@ -1,4 +1,7 @@
-# 2019-evol-comp-ufpa
+# Tetris AI 
+
+## Screenshot
+<div style="text-align:center"><img src="fig/tetris.png" /></div>
 
 ## Usage:
 To run Tetris AI with optimal parameters:
